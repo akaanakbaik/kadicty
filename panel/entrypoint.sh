@@ -2,8 +2,14 @@
 set -e
 /scripts/core.sh
 /scripts/patch_ui.sh
+
+if [ -f "/scripts/php_optimize.ini" ]; then
+    cp /scripts/php_optimize.ini /usr/local/etc/php/conf.d/99-optimize.ini
+fi
+
 mkdir -p /app/storage/logs
 chown -R www-data:www-data /app/storage /app/bootstrap/cache
+
 if [ ! -f /etc/nginx/http.d/panel.conf ]; then
     cat > /etc/nginx/http.d/panel.conf <<EOF
 server {
@@ -19,7 +25,7 @@ server {
     location = /robots.txt  { access_log off; log_not_found off; }
     access_log off;
     error_log  /var/log/nginx/panel.app-error.log error;
-    client_max_body_size 100m;
+    client_max_body_size 1024m;
     client_body_timeout 120s;
     sendfile off;
     location ~ \.php$ {
@@ -27,7 +33,7 @@ server {
         fastcgi_pass 127.0.0.1:9000;
         fastcgi_index index.php;
         include fastcgi_params;
-        fastcgi_param PHP_VALUE "upload_max_filesize = 100M \n post_max_size=100M";
+        fastcgi_param PHP_VALUE "upload_max_filesize = 1024M \n post_max_size=1024M";
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         fastcgi_param HTTP_PROXY "";
         fastcgi_intercept_errors off;
@@ -43,13 +49,18 @@ server {
 }
 EOF
 fi
+
 /scripts/ssl.sh
+
 if [ -f "artisan" ]; then
     php artisan migrate --force
     php artisan config:cache
     php artisan route:cache
     php artisan view:cache
+    echo "Seeding Universal Egg..."
+    php /scripts/SeedUniversal.php
 fi
+
 /usr/bin/supervisord -c /etc/supervisord.conf &
 php-fpm -D
 nginx -g "daemon off;"
