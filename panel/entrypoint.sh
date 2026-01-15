@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+/scripts/core.sh
 mkdir -p /app/storage/logs
 chown -R www-data:www-data /app/storage /app/bootstrap/cache
 if [ ! -f /etc/nginx/http.d/panel.conf ]; then
@@ -41,6 +42,7 @@ server {
 }
 EOF
 fi
+/scripts/ssl.sh
 if [ -f "artisan" ]; then
     php artisan migrate --force
     php artisan config:cache
