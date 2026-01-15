@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  database:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: panel
+      POSTGRES_USER: pterodactyl
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - database_data:/var/lib/postgresql/data
+  cache:
+    image: redis:7-alpine
+    restart: always
+  panel:
+    image: ghcr.io/pterodactyl/panel:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - .env
+    volumes:
+      - panel_data:/app/var
+      - nginx_conf:/etc/nginx/http.d
+      - certs:/etc/letsencrypt
+    depends_on:
+      - database
+      - cache
+  wings:
+    image: ghcr.io/pterodactyl/wings:latest
+    restart: always
+    privileged: true
+    ports:
+      - "8080:8080"
+      - "2022:2022"
+    environment:
+      TZ: "Asia/Jakarta"
+      WINGS_UID: 988
+      WINGS_GID: 988
+      WINGS_USERNAME: pterodactyl
+    volumes:
+      - ./wings/config.yml:/etc/pterodactyl/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers
+      - wings_data:/var/lib/pterodactyl/volumes
+      - wings_backup:/var/lib/pterodactyl/backups
+      - /tmp/pterodactyl/:/tmp/pterodactyl/
+    depends_on:
+      - panel
+volumes:
+  database_data:
+  panel_data:
+  nginx_conf:
+  certs:
+  wings_data:
+  wings_backup:
