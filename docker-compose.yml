@@ -30,6 +30,7 @@ services:
       - panel_data:/app/var
       - nginx_conf:/etc/nginx/http.d
       - certs:/etc/letsencrypt
+      - ./wings:/wings_share
     depends_on:
       - database
       - cache
