@@ -2,6 +2,8 @@
 set -e
 mkdir -p wings
 touch wings/config.yml
+chmod 777 wings
+chmod 644 wings/config.yml
 read -p "Masukkan URL Panel (default: http://localhost): " INPUT_URL
 APP_URL=${INPUT_URL:-http://localhost}
 read -p "Masukkan Timezone (default: Asia/Jakarta): " INPUT_TZ
@@ -39,11 +41,12 @@ MAIL_FROM_NAME=Pterodactyl
 HASHIDS_SALT=$(openssl rand -hex 8)
 HASHIDS_LENGTH=8
 EOF
+echo "Membangun sistem kustom (Mungkin memakan waktu beberapa menit)..."
+docker-compose build --no-cache
 docker-compose up -d database cache
-echo "Menunggu database siap (10 detik)..."
 sleep 10
 docker-compose run --rm panel php artisan migrate --seed --force
 docker-compose run --rm panel php artisan p:user:make --email=$ADMIN_EMAIL --admin=1
 docker-compose up -d
-echo "Instalasi Panel Selesai."
-echo "Lanjut ke konfigurasi Node/Wings di browser, lalu edit file wings/config.yml"
+echo "Instalasi Selesai."
+echo "Panel, Wings, dan Auto-Konfigurasi sedang berjalan."
