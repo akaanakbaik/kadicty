@@ -13,14 +13,20 @@ services:
     image: redis:7-alpine
     restart: always
   panel:
-    image: ghcr.io/pterodactyl/panel:latest
+    build:
+      context: ./panel
+      dockerfile: Dockerfile
     restart: always
     ports:
       - "80:80"
       - "443:443"
     env_file:
       - .env
+    environment:
+      APP_ENV: production
+      APP_URL: ${APP_URL}
     volumes:
+      - ./panel/src:/app
       - panel_data:/app/var
       - nginx_conf:/etc/nginx/http.d
       - certs:/etc/letsencrypt
