@@ -16,7 +16,8 @@ RUN apk add --no-cache \
     freetype-dev \
     libjpeg-turbo-dev \
     certbot \
-    certbot-nginx
+    certbot-nginx \
+    python3
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
     bcmath \
@@ -28,6 +29,8 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     xml \
     zip \
     opcache
+COPY scripts /scripts
+RUN chmod +x /scripts/*.sh
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
