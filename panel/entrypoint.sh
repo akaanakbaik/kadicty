@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 /scripts/core.sh
+/scripts/patch_ui.sh
 mkdir -p /app/storage/logs
 chown -R www-data:www-data /app/storage /app/bootstrap/cache
 if [ ! -f /etc/nginx/http.d/panel.conf ]; then
